@@ -4,13 +4,38 @@ use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return view('welcome');
+    if (auth()->check()) {
+        return auth()->user()->role === 'admin'
+            ? redirect('/admin')
+            : redirect('/siswa');
+    }
+
+    return redirect('/login');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+/*
+|--------------------------------------------------------------------------
+| DASHBOARD SISWA
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth','role:siswa'])->get('/siswa', function () {
+    return view('siswa.dashboard');
+});
 
+/*
+|--------------------------------------------------------------------------
+| DASHBOARD ADMIN
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth','role:admin'])->get('/admin', function () {
+    return view('admin.dashboard');
+});
+
+/*
+|--------------------------------------------------------------------------
+| PROFILE (default breeze, boleh tetap)
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
