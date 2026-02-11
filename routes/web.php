@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PengaduanController; 
+use App\Http\Controllers\AdminController;  
 
 Route::get('/', function () {
     if (auth()->check()) {
@@ -18,9 +20,27 @@ Route::get('/', function () {
 | DASHBOARD SISWA
 |--------------------------------------------------------------------------
 */
-Route::middleware(['auth','role:siswa'])->get('/siswa', function () {
-    return view('siswa.dashboard');
+Route::middleware(['auth'])->group(function () {
+
+    Route::get('/siswa', [PengaduanController::class, 'index'])
+        ->name('siswa.dashboard');
+
+    Route::post('/siswa/store', [PengaduanController::class, 'store'])
+        ->name('siswa.store');
+        
+    Route::get('/siswa/{pengaduan}', [PengaduanController::class, 'show'])
+         ->name('siswa.show');
+
+    Route::get('/siswa/{pengaduan}/edit', [PengaduanController::class, 'edit'])
+        ->name('siswa.edit');
+
+    Route::put('/siswa/{pengaduan}', [PengaduanController::class, 'update'])
+        ->name('siswa.update');
+
+    Route::delete('/siswa/{pengaduan}', [PengaduanController::class, 'destroy'])
+        ->name('siswa.destroy');
 });
+
 
 /*
 |--------------------------------------------------------------------------
@@ -36,10 +56,19 @@ Route::middleware(['auth','role:admin'])->get('/admin', function () {
 | PROFILE (default breeze, boleh tetap)
 |--------------------------------------------------------------------------
 */
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
+
+    Route::get('/', [AdminController::class, 'index'])
+        ->name('admin.dashboard');
+
+    Route::get('/{pengaduan}', [AdminController::class, 'show'])
+        ->name('admin.show');
+
+    Route::post('/{pengaduan}/jawab', [AdminController::class, 'jawab'])
+        ->name('admin.jawab');
+
+    Route::delete('/{pengaduan}/hapus-jawaban', [AdminController::class, 'hapusJawaban'])
+        ->name('admin.hapusJawaban');
 });
 
 require __DIR__.'/auth.php';
